@@ -1,9 +1,11 @@
 import os
 from sqlalchemy import Column, String, Integer
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.exc import SQLAlchemyError
+
 import json
 
-database_filename = "database.db"
+database_filename = os.environ.get("DB_NAME")
 project_dir = os.path.dirname(os.path.abspath(__file__))
 database_path = "sqlite:///{}".format(os.path.join(project_dir, database_filename))
 
@@ -34,13 +36,21 @@ def db_drop_and_create_all():
     db.drop_all()
     db.create_all()
     # add one demo row which is helping in POSTMAN test
-    drink = Drink(
+    water = Drink(
         title='water',
         recipe='[{"name": "water", "color": "blue", "parts": 1}]'
     )
 
 
-    drink.insert()
+    water.insert()
+    
+    boba = Drink(
+        title='boba milk tea',
+        recipe='[{"name": "tea", "color": "brown", "parts": 3},{"name": "mik", "color": "white", "parts": 1},{"name": "boba", "color": "black", "parts": 1}]'
+    )
+
+
+    boba.insert()
 # ROUTES
 
 '''
@@ -57,7 +67,7 @@ class Drink(db.Model):
     # the ingredients blob - this stores a lazy json blob
     # the required datatype is [{'color': string, 'name':string, 'parts':number}]
     recipe = Column(String(180), nullable=False)
-
+    
     '''
     short()
         short form representation of the Drink model
@@ -97,6 +107,17 @@ class Drink(db.Model):
     def insert(self):
         db.session.add(self)
         db.session.commit()
+        # try:
+        #     db.session.add(self)
+        #     db.session.commit()
+        # except SQLAlchemyError as ex:
+        #     db.session.rollback()
+        #     print (ex)
+        #     raise ex
+        # finally:
+        #     db.session.close()
+        
+        
 
     '''
     delete()
@@ -126,3 +147,5 @@ class Drink(db.Model):
 
     def __repr__(self):
         return json.dumps(self.short())
+    
+    
