@@ -23,18 +23,6 @@ with app.app_context():
     db_drop_and_create_all()
 
 # ROUTES
-# @app.after_request
-# def after_request(response):
-#     response.headers.add('Access-Control-Allow-Origin', '*')
-#     response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
-#     response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
-#     response.headers['X-XSS-Protection'] = '0'
-#     response.headers['Cache-Control'] = 'no-store, max-age=0'
-#     response.headers['Pragma'] = 'no-cache'
-#     response.headers['Expires'] = '0'
-#     response.headers['Content-Type'] = 'application/json; charset=utf-8'
-#     print (response)
-#     return response
     
 '''
 @TODO implement endpoint
@@ -73,14 +61,12 @@ def drinks_detail():
         or appropriate status code indicating reason for failure
 '''
 @app.route("/drinks", methods=["POST"])
-# @requires_auth(permission="post:drinks")
+@requires_auth(permission="post:drinks")
 def create_drink():
-    # print(request.json)
     try:
         drink = Drink(title=request.json["title"], recipe=format_recipe(request.json["recipe"]))
         drink.insert()
-        formatted = drink.long()
-        return jsonify({"success":True,"drinks":formatted})
+        return jsonify({"success":True,"drinks":[drink.long()]})
     except:
         abort(422)
     
@@ -109,7 +95,7 @@ def update_drink(id):
             if "recipe" in request.json:
                 drink.recipe = format_recipe(request.json["recipe"])
             drink.update()
-            return jsonify({"success":True,"drinks":drink.long()}) 
+            return jsonify({"success":True,"drinks":[drink.long()]}) 
     except:
         abort(422)
         

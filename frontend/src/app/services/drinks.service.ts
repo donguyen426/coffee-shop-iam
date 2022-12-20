@@ -111,20 +111,14 @@ export class DrinksService {
       this.http.patch(this.url + '/drinks/' + drink.id, drink, this.getHeaders())
         .subscribe((res: any) => {
           if (res.success) {
-            // BUG: the commented line won't work - only works when getting drinks
-            // this.drinksToItems(res.drinks);
-            this.items[res.drinks.id] = res.drinks
+            this.drinksToItems(res.drinks);
           }
         });
     } else { // insert
       this.http.post(this.url + '/drinks', drink, this.getHeaders())
         .subscribe((res: any) => {
           if (res.success) {
-            // BUG: the commented line won't work - only works when getting drinks
-            // this.drinksToItems(res.drinks);
-
-            //This fixes the issue newly created drink won't appear
-            this.items[res.drinks.id] = res.drinks
+            this.drinksToItems(res.drinks);
           }
         });
     }
