@@ -168,14 +168,9 @@ def requires_auth(permission=''):
         @wraps(f)
         def wrapper(*args, **kwargs):
             token = get_token_auth_header()
-            try:
-                payload = verify_decode_jwt(token)
-            except Exception:
-                raise AuthError({
-                    'code': 'invalid_token',
-                    'description': 'Access denied due to invalid token'
-                }, 401)
+            payload = verify_decode_jwt(token)
             check_permissions(permission, payload)
+                
             return f(*args, **kwargs)
 
         return wrapper

@@ -106,18 +106,7 @@ class Drink(db.Model):
 
     def insert(self):
         db.session.add(self)
-        db.session.commit()
-        # try:
-        #     db.session.add(self)
-        #     db.session.commit()
-        # except SQLAlchemyError as ex:
-        #     db.session.rollback()
-        #     print (ex)
-        #     raise ex
-        # finally:
-        #     db.session.close()
-        
-        
+        db.session.commit()       
 
     '''
     delete()

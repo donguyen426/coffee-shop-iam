@@ -96,13 +96,11 @@ export class DrinksService {
       this.http.get(this.url + '/drinks-detail', this.getHeaders())
         .subscribe((res: any) => {
           this.drinksToItems(res.drinks);
-          console.log(res);
         });
     } else {
       this.http.get(this.url + '/drinks', this.getHeaders())
         .subscribe((res: any) => {
           this.drinksToItems(res.drinks);
-          console.log(res);
         });
     }
 
@@ -113,15 +111,20 @@ export class DrinksService {
       this.http.patch(this.url + '/drinks/' + drink.id, drink, this.getHeaders())
         .subscribe((res: any) => {
           if (res.success) {
-            this.drinksToItems(res.drinks);
+            // BUG: the commented line won't work - only works when getting drinks
+            // this.drinksToItems(res.drinks);
+            this.items[res.drinks.id] = res.drinks
           }
         });
     } else { // insert
       this.http.post(this.url + '/drinks', drink, this.getHeaders())
         .subscribe((res: any) => {
           if (res.success) {
-            console.log(res.drinks)
-            this.drinksToItems(res.drinks);
+            // BUG: the commented line won't work - only works when getting drinks
+            // this.drinksToItems(res.drinks);
+
+            //This fixes the issue newly created drink won't appear
+            this.items[res.drinks.id] = res.drinks
           }
         });
     }

@@ -1,5 +1,5 @@
 import os
-from flask import Flask, request, jsonify, abort
+from flask import Flask, request, jsonify, abort, Response
 from sqlalchemy import exc
 import json
 from flask_cors import CORS
@@ -19,8 +19,8 @@ CORS(app)
 !! NOTE THIS MUST BE UNCOMMENTED ON FIRST RUN
 !! Running this funciton will add one
 '''
-# with app.app_context():
-#     db_drop_and_create_all()
+with app.app_context():
+    db_drop_and_create_all()
 
 # ROUTES
 # @app.after_request
@@ -73,7 +73,7 @@ def drinks_detail():
         or appropriate status code indicating reason for failure
 '''
 @app.route("/drinks", methods=["POST"])
-@requires_auth(permission="post:drinks")
+# @requires_auth(permission="post:drinks")
 def create_drink():
     # print(request.json)
     try:
@@ -101,12 +101,25 @@ def create_drink():
 def update_drink(id):
     try:
         drink = Drink.query.get(id)
-        drink.title = request.json["title"]
-        drink.recipe = format_recipe(request.json["recipe"])
-        drink.update()
-        return jsonify({"success":True,"drinks":drink.long()}) 
+        if drink is None:
+            abort(404)
+        else: 
+            if "title" in request.json:
+                drink.title = request.json["title"]
+            if "recipe" in request.json:
+                drink.recipe = format_recipe(request.json["recipe"])
+            drink.update()
+            return jsonify({"success":True,"drinks":drink.long()}) 
     except:
         abort(422)
+        
+def format_recipe(json_data):
+    recipe = [json.dumps(item) for item in json_data]
+    output = "["
+    for i in range(len(recipe)-1):
+        output += recipe[i] + ","
+    output += recipe[len(recipe)-1] + "]"
+    return output
 
 '''
 @TODO implement endpoint
@@ -142,7 +155,6 @@ def unprocessable(error):
         "message": "Unprocessable"
     }), 422
 
-
 '''
 @TODO implement error handlers using the @app.errorhandler(error) decorator
     each error handler should return (with approprate messages):
@@ -170,10 +182,15 @@ def not_found(error):
 @TODO implement error handler for AuthError
     error handler should conform to general task above
 '''
-def format_recipe(json_data):
-    recipe = [json.dumps(item) for item in json_data]
-    output = "["
-    for i in range(len(recipe)-1):
-        output += recipe[i] + ","
-    output += recipe[len(recipe)-1] + "]"
-    return output
+
+@app.errorhandler(AuthError)
+def handle_auth_error(ex: AuthError) -> Response:
+    """
+    serializes the given AuthError as json and sets the response status code accordingly.
+    :param ex: an auth error
+    :return: json serialized ex response
+    """
+    response = jsonify(ex.error)
+    response.status_code = ex.status_code
+    return response
+
